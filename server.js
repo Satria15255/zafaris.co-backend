@@ -16,7 +16,15 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors());
+
+app.use(
+  cors({
+    origin: ["https://zafarisco.vercel.app/", "https://localhost:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 app.get("/", (req, res) => {

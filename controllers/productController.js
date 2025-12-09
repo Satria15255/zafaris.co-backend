@@ -3,7 +3,7 @@ const Transaction = require("../models/Transaction");
 
 exports.getLatestProducts = async (req, res) => {
   try {
-    const latestProducts = await Product.find().sort({ createdAt: -1 }).limit(4);
+    const latestProducts = await Product.find().sort({ createdAt: -1 }).limit(9);
     res.json(latestProducts);
   } catch (error) {
     console.error("Failed fecthing latest product", error);

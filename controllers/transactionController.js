@@ -1,5 +1,6 @@
 const Transaction = require("../models/Transaction");
 const Product = require("../models/Product");
+const DailyDiscount = require("../models/DailyDiscount");
 
 // CREATE transaction
 
@@ -35,9 +36,20 @@ exports.createTransaction = async (req, res) => {
         return res.status(400).json({ message: `Product not found: ${product}` });
       }
 
-      const pricePerUnit = productData.price;
-      const subtotal = pricePerUnit * quantity;
+      let discountPercent = 0;
+      let finalPricePerUnit = productData.price;
 
+      const discount = await DailyDiscount.findOne({
+        productId: productData._id,
+        expiresAt: { $gt: new Date() },
+      });
+
+      if (discount) {
+        discountPercent = discount.discountPercent;
+        finalPricePerUnit = productData.price - productData.price * (discountPercent / 100);
+      }
+
+      const subtotal = finalPricePerUnit * quantity;
       totalProducts += quantity;
       totalPrice += subtotal;
 
@@ -45,7 +57,9 @@ exports.createTransaction = async (req, res) => {
         product,
         size,
         quantity,
-        pricePerUnit,
+        originalPrice: productData.price,
+        discountPercent,
+        pricePerUnit: finalPricePerUnit,
         subtotal,
       });
     }

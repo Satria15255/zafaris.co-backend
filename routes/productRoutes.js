@@ -15,7 +15,7 @@ router.put("/:id", authMiddleware, adminMiddleware, upload.single("image"), upda
 router.post("/", authMiddleware, adminMiddleware, upload.single("image"), createProduct);
 router.delete("/:id", authMiddleware, adminMiddleware, deleteProduct);
 
-router.get("/generate-discount", async (req, res) => {
+router.post("/generate-discount", async (req, res) => {
   await createDailyDiscount();
   res.send("Diskon di-generate");
 });

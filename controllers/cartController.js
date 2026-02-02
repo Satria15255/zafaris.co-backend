@@ -1,4 +1,6 @@
 const Cart = require("../models/Cart");
+const DailyDiscount = require("../models/DailyDiscount");
+const Product = require("../models/Product");
 
 exports.addToCart = async (req, res) => {
   const userId = req.user.id;
@@ -7,17 +9,30 @@ exports.addToCart = async (req, res) => {
   try {
     let cart = await Cart.findOne({ userId });
 
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const discount = await DailyDiscount.findOne({
+      productId: product._id,
+      expiresAt: { $gt: new Date() },
+    });
+
+    const discountPercent = discount ? discount.discountPercent : 0;
+    const finalPrice = discountPercent > 0 ? product.price - (product.price * discountPercent) / 100 : product.price;
+
     if (!cart) {
       cart = new Cart({
         userId,
-        items: [{ productId, quantity, size }],
+        items: [{ productId, quantity, size, price: product.price, finalPrice, discountPercent }],
       });
     } else {
       const itemIndex = cart.items.findIndex((item) => item.productId.toString() === productId.toString() && String(item.size) === String(size));
       if (itemIndex > -1) {
         cart.items[itemIndex].quantity += quantity;
       } else {
-        cart.items.push({ productId, quantity, size });
+        cart.items.push({ productId, quantity, size, price: product.price, finalPrice, discountPercent });
       }
     }
     await cart.save();
@@ -38,7 +53,9 @@ exports.getUserCart = async (req, res) => {
       return res.status(200).json({ items: [] });
     }
 
-    res.status(200).json({ items: cart.items });
+    res.status(200).json({
+      items: cart.items,
+    });
   } catch (err) {
     console.error("Get cart err", err);
     res.status(500).json({ message: "Failed to get cart" });

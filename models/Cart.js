@@ -22,6 +22,18 @@ const cartSchema = new mongoose.Schema(
           type: Number,
           reqeuired: true,
         },
+        price: {
+          type: Number,
+          required: true,
+        },
+        discountPercent: {
+          type: Number,
+          default: 0,
+        },
+        finalPrice: {
+          type: Number,
+          required: true,
+        },
       },
     ],
   },

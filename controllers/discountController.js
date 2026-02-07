@@ -3,9 +3,7 @@ const DailyDiscount = require("../models/DailyDiscount");
 
 exports.createDailyDiscount = async () => {
   try {
-    await DailyDiscount.deleteMany({
-      expiresAt: { $lte: new Date() },
-    });
+    await DailyDiscount.deleteMany({});
 
     const randomProducts = await Product.aggregate([{ $sample: { size: 6 } }]);
 

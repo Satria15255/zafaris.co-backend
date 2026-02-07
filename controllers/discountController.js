@@ -1,7 +1,7 @@
 const Product = require("../models/Product");
 const DailyDiscount = require("../models/DailyDiscount");
 
-exports.createDailyDiscount = async (req, res) => {
+exports.createDailyDiscount = async () => {
   try {
     await DailyDiscount.deleteMany({
       expiresAt: { $lte: new Date() },

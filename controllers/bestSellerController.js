@@ -19,7 +19,7 @@ exports.getBestSellers = async (req, res) => {
         },
       },
       { $sort: { totalAdded: -1 } },
-      { $limit: 3 },
+      { $limit: 4 },
       {
         $lookup: {
           from: "products",

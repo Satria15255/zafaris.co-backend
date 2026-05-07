@@ -7,7 +7,7 @@ const DailyDiscount = require("../models/DailyDiscount");
 // CREATE transaction
 exports.createTransaction = async (req, res) => {
   try {
-    const { products, message, shippingMethod, paymentMethod, shippingAddress, voucherCode } = req.body;
+    const { products, message, shippingMethod, paymentMethod, tranferProvider, shippingAddress, voucherCode } = req.body;
 
     const userId = req.user.id;
 
@@ -64,6 +64,9 @@ exports.createTransaction = async (req, res) => {
       });
     }
 
+    // Payment Expired (Tranfer)
+    const paymentExpiredAt = paymentMethod === "Transfer" ? new Date(Date.now() + 60 * 60 * 1000) : null;
+
     const newTransaction = new Transaction({
       user: userId,
       products: productsForTransaction,
@@ -71,10 +74,13 @@ exports.createTransaction = async (req, res) => {
       totalPrice,
       message,
       shippingMethod,
-      paymentMethod,
       shippingAddress,
       voucherCode,
-      status: "pending_confirmation", // Default status
+      paymentMethod,
+      transferProvider,
+      paymentStatus: "Waiting for Payment",
+      paymentExpiredAt,
+      status: "Waiting Confirmation", // Default status
     });
 
     await newTransaction.save();
@@ -83,6 +89,37 @@ exports.createTransaction = async (req, res) => {
   } catch (error) {
     console.error("Error creating transaction", error.message);
     res.status(500).json({ message: "Failed to create transaction" });
+  }
+};
+
+exports.payTransaction = async (req, res) => {
+  try {
+    const transaction = await Transaction.findById(req.params.id);
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    // Check  Expired
+    if (transaction.paymentExpiredAt && new Date() > transaction.paymentExpiredAt) {
+      transaction.paymentStatus = "Expired";
+
+      await transaction.save();
+
+      return res.status(400).json({
+        message: "Payment Expired",
+      });
+    }
+
+    transaction.paymentStatus = "Paid";
+    transaction.paidAt = new Date();
+    transaction.status = "Processing";
+
+    await transaction.save();
+
+    res.status(200).json({ message: "Payment Success", transaction });
+  } catch (error) {
+    res.status(500).json({ message: "Payment Failed", error: error.message });
   }
 };
 
@@ -105,6 +142,29 @@ exports.getAllTransaction = async (req, res) => {
     res.json(transactions);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch transactions", error });
+  }
+};
+
+exports.getTransactionById = async (req, res) => {
+  try {
+
+    const transaction = await Transaction.findById(req.params.id);
+
+    if (!transaction) {
+      return res.status(404).json({
+        message: "Transaction not found"
+      });
+    }
+
+    res.status(200).json(transaction);
+
+  } catch (err) {
+
+    res.status(500).json({
+      message: "Failed to get transaction",
+      error: err.message
+    });
+
   }
 };
 
@@ -154,7 +214,7 @@ exports.cancelTransaction = async (req, res) => {
 
 exports.getLatestTransaction = async (req, res) => {
   try {
-    const latest = await Transaction.findOne({ user: req.user.id, status: "pending_confirmation" }).sort({ createdAt: -1 }).populate("products.product");
+    const latest = await Transaction.findOne({ user: req.user.id, status: "Waiting Confirmation" }).sort({ createdAt: -1 }).populate("products.product");
 
     if (!latest) return res.status(404).json({ message: "No recent transaction found" });
 

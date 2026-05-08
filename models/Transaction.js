@@ -23,8 +23,8 @@ const transactionSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ["Waiting Confirmation", "Processing", "Shipped", "Delivered", "Completed", "Cancelled"],
-      default: "Waiting Confirmation",
+      enum: ["Waiting for Payment", "Processing", "Shipped", "Delivered", "Completed", "Cancelled"],
+      default: "Waiting for Payment",
     },
     totalProducts: { type: Number, required: true },
     totalPrice: { type: Number, required: true },

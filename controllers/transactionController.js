@@ -7,7 +7,7 @@ const DailyDiscount = require("../models/DailyDiscount");
 // CREATE transaction
 exports.createTransaction = async (req, res) => {
   try {
-    const { products, message, shippingMethod, paymentMethod, tranferProvider, shippingAddress, voucherCode } = req.body;
+    const { products, message, shippingMethod, paymentMethod, transferProvider, shippingAddress, voucherCode } = req.body;
 
     const userId = req.user.id;
 
@@ -64,6 +64,7 @@ exports.createTransaction = async (req, res) => {
       });
     }
 
+    const status = paymentMethod === "Cash on Delivery" ? "Processing" :  "Waiting for Payment";
     // Payment Expired (Tranfer)
     const paymentExpiredAt = paymentMethod === "Transfer" ? new Date(Date.now() + 60 * 60 * 1000) : null;
 
@@ -80,7 +81,7 @@ exports.createTransaction = async (req, res) => {
       transferProvider,
       paymentStatus: "Waiting for Payment",
       paymentExpiredAt,
-      status: "Waiting Confirmation", // Default status
+      status
     });
 
     await newTransaction.save();

@@ -54,7 +54,10 @@ exports.createTransaction = async (req, res) => {
       totalPrice += subtotal;
 
       productsForTransaction.push({
-        product,
+        product: productData.id,
+        name: productData.name,
+        image: productData.image,
+        brand: productData.brand,
         size,
         quantity,
         originalPrice: productData.price,
@@ -64,7 +67,7 @@ exports.createTransaction = async (req, res) => {
       });
     }
 
-    const status = paymentMethod === "Cash on Delivery" ? "Processing" :  "Waiting for Payment";
+    const status = paymentMethod === "Cash on Delivery" ? "Processing" : "Waiting for Payment";
     // Payment Expired (Tranfer)
     const paymentExpiredAt = paymentMethod === "Transfer" ? new Date(Date.now() + 60 * 60 * 1000) : null;
 
@@ -81,7 +84,7 @@ exports.createTransaction = async (req, res) => {
       transferProvider,
       paymentStatus: "Waiting for Payment",
       paymentExpiredAt,
-      status
+      status,
     });
 
     await newTransaction.save();
@@ -95,6 +98,8 @@ exports.createTransaction = async (req, res) => {
 
 exports.payTransaction = async (req, res) => {
   try {
+    const { transferProvider } = req.body;
+
     const transaction = await Transaction.findById(req.params.id);
 
     if (!transaction) {
@@ -112,6 +117,7 @@ exports.payTransaction = async (req, res) => {
       });
     }
 
+    transaction.transferProvider = transferProvider;
     transaction.paymentStatus = "Paid";
     transaction.paidAt = new Date();
     transaction.status = "Processing";

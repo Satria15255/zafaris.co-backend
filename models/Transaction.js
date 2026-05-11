@@ -7,6 +7,7 @@ const transactionSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    phoneNumber:Number,
     products: [
       {
         product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
@@ -36,9 +37,11 @@ const transactionSchema = new mongoose.Schema(
       required: true,
     },
     transferProvider: {
-      type: String,
       enum: ["Paypal", "Wise", null],
-      default: null,
+      cardName : {type: String, requred: true},
+      cardNumber: {type : Number, required: true},
+      cvv : {type: Number},
+      expiredDate: {type : Date},
     },
     paymentStatus: {
       type: String,

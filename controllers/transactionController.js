@@ -7,7 +7,7 @@ const DailyDiscount = require("../models/DailyDiscount");
 // CREATE transaction
 exports.createTransaction = async (req, res) => {
   try {
-    const { products,phoneNumber, message, shippingMethod, paymentMethod, transferProvider, shippingAddress, voucherCode } = req.body;
+    const { products, name, phoneNumber, message, shippingMethod, paymentMethod, transferProvider, shippingAddress, voucherCode } = req.body;
 
     const userId = req.user.id;
 
@@ -74,6 +74,7 @@ exports.createTransaction = async (req, res) => {
     const newTransaction = new Transaction({
       user: userId,
       products: productsForTransaction,
+      name,
       totalProducts,
       totalPrice,
       phoneNumber,

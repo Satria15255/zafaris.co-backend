@@ -1,6 +1,7 @@
 const Transaction = require("../models/Transaction");
 const Product = require("../models/Product");
 const DailyDiscount = require("../models/DailyDiscount");
+const updateBestSellerProducts = require("../helpers/updateBestSellerProducts");
 
 // CREATE transaction
 
@@ -156,24 +157,20 @@ exports.getAllTransaction = async (req, res) => {
 
 exports.getTransactionById = async (req, res) => {
   try {
-
     const transaction = await Transaction.findById(req.params.id);
 
     if (!transaction) {
       return res.status(404).json({
-        message: "Transaction not found"
+        message: "Transaction not found",
       });
     }
 
     res.status(200).json(transaction);
-
   } catch (err) {
-
     res.status(500).json({
       message: "Failed to get transaction",
-      error: err.message
+      error: err.message,
     });
-
   }
 };
 
@@ -208,11 +205,11 @@ exports.cancelTransaction = async (req, res) => {
       return res.status(404).json({ message: "Unauthorized" });
     }
 
-    if (transaction.status === "shipped" || transaction.status === "delivered") {
+    if (transaction.status === "Shipped" || transaction.status === "Delivered") {
       return res.status(400).json({ message: "The order has been shipped and cannot be cancelled." });
     }
 
-    transaction.status = "cancelled";
+    transaction.status = "Cancelled";
     await transaction.save();
 
     res.status(200).json({ message: "Transaction cancel succesfully", transaction });
@@ -249,12 +246,22 @@ exports.confirmReceived = async (req, res) => {
       return res.status(403).json({ message: "Unauthorization" });
     }
 
-    if (transaction.status !== "delivered") {
+    if (transaction.status !== "Delivered") {
       return res.status(400).json({ message: "Order is not delivered yet" });
     }
 
-    transaction.status = "completed";
+    transaction.status = "Completed";
     await transaction.save();
+
+    // Update totalSold
+    for (const item of transaction.products) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { totalSold: item.quantity },
+      });
+    }
+
+    // Update best seller products
+    await updateBestSellerProducts();
 
     res.status(200).json({ message: "Order confirmed as received", transaction });
   } catch (err) {

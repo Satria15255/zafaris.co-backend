@@ -93,7 +93,7 @@ exports.deleteProduct = async (req, res) => {
 exports.getBestSellerProducts = async (req, res) => {
   try {
     const bestSellers = await Transaction.aggregate([
-      { $match: { status: "delivered" } },
+      { $match: { status: "Delivered" } },
       { $unwind: "$products" },
       {
         $group: {
@@ -102,7 +102,7 @@ exports.getBestSellerProducts = async (req, res) => {
         },
       },
       { $sort: { totalSold: -1 } },
-      { $limit: 3 },
+      { $limit: 4 },
       {
         $lookup: {
           from: "products",

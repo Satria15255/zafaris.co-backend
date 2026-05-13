@@ -11,6 +11,14 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    totalSold: {
+      type: Number,
+      default: 0,
+    },
+    isBestSeller: {
+      type: Boolean,
+      default: false,
+    },
     image: String,
     description: String,
     category: String,
@@ -20,7 +28,7 @@ const productSchema = new mongoose.Schema(
       ref: "User",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Product", productSchema);

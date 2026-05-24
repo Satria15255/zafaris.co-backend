@@ -72,6 +72,8 @@ exports.createTransaction = async (req, res) => {
     // Payment Expired (Tranfer)
     const paymentExpiredAt = paymentMethod === "Transfer" ? new Date(Date.now() + 60 * 60 * 1000) : null;
 
+    const paymentStatus = paymentMethod === "Cash on Delivery" ? "Paid" : "Waiting for Payment";
+
     const newTransaction = new Transaction({
       user: userId,
       products: productsForTransaction,
@@ -85,7 +87,7 @@ exports.createTransaction = async (req, res) => {
       voucherCode,
       paymentMethod,
       transferProvider,
-      paymentStatus: "Waiting for Payment",
+      paymentStatus,
       paymentExpiredAt,
       status,
     });

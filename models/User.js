@@ -15,6 +15,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    address: {
+      type: String,
+      default: " ",
+    },
+    phoneNumber: {
+      type: String,
+      default: " ",
+    },
     favorites: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -27,7 +35,7 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.models.User || mongoose.model("User", userSchema);

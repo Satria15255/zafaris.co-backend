@@ -19,7 +19,7 @@ const updateBestSellerProducts = async () => {
     // Set Top product to Best Seller
     await Product.updateMany(
       {
-        _id: { $inc: ids },
+        _id: { $in: ids },
       },
       {
         isBestSeller: true,

@@ -18,7 +18,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://zafarisco.vercel.app", "https://zafaris-demo-ecomerce.vercel.app/", "http://localhost:5173"],
+    origin: ["https://zafarisco.vercel.app", "https://zafaris-demo-ecomerce.vercel.app", "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   }),

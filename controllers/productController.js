@@ -25,16 +25,16 @@ exports.getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: "Product not found" });
-    const discount = await DailyDicount.findOne({
+    const discount = await DailyDiscount.findOne({
       productId: product._id,
-      exppiresAt: { $gt: new Date() },
+      expiresAt: { $gt: new Date() },
     });
 
     const productData = {
       ...product.toObject(),
 
       discountPercent: discount?.discountPercent || 0,
-      discountPrice: discount?.price || null,
+      discountPrice: discount?.discountPrice || null,
       isDiscount: !!discount,
     };
     res.json(productData);

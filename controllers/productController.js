@@ -1,5 +1,6 @@
 const Product = require("../models/Product");
 const Transaction = require("../models/Transaction");
+const DailyDiscount = require("../models/DailyDiscount");
 
 exports.getLatestProducts = async (req, res) => {
   try {
@@ -24,7 +25,19 @@ exports.getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: "Product not found" });
-    res.json(product);
+    const discount = await DailyDicount.findOne({
+      productId: product._id,
+      exppiresAt: { $gt: new Date() },
+    });
+
+    const productData = {
+      ...product.toObject(),
+
+      discountPercent: discount?.discountPercent || 0,
+      discountPrice: discount?.price || null,
+      isDiscount: !!discount,
+    };
+    res.json(productData);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch product" });
   }

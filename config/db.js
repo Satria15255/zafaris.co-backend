@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
+const initCrons = require("../cron");
 
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("MoongoDB connected");
-    require("../cron");
+    initCrons();
   } catch (error) {
     console.error(error.message);
     process.exit(1);

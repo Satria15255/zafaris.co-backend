@@ -4,8 +4,6 @@ const DailyDiscount = require("../models/DailyDiscount");
 const updateBestSellerProducts = require("../helpers/updateBestSellerProducts");
 
 // CREATE transaction
-
-// CREATE transaction
 exports.createTransaction = async (req, res) => {
   try {
     const { products, name, phoneNumber, message, shippingMethod, paymentMethod, transferProvider, shippingAddress, voucherCode } = req.body;

@@ -3,13 +3,13 @@ const mongoose = require("mongoose");
 const ProductVariantSchema = new mongoose.Schema(
   {
     product: {
-      type: mongoose.schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
       required: true,
     },
     size: {
       type: Number,
-      requires: true,
+      required: true,
     },
     stock: {
       type: Number,

@@ -1,0 +1,18 @@
+const express = require("express");
+
+const { createVariant, getVariantsByProduct, getVariantById, updateVariant, deleteVariant } = require("../controllers/productVariantController");
+const { authMiddleware, adminMiddleware } = require("../middleware/authMiddleware");
+
+const router = express.Router();
+
+router.post("/", createVariant);
+
+router.get("/product/:productId", getVariantsByProduct);
+
+router.get("/:id", getVariantById);
+
+router.patch("/:id", updateVariant);
+
+router.delete("/:id", deleteVariant);
+
+module.exports = router;

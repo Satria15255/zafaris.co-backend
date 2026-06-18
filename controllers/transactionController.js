@@ -2,11 +2,22 @@ const Transaction = require("../models/Transaction");
 const Product = require("../models/Product");
 const DailyDiscount = require("../models/DailyDiscount");
 const updateBestSellerProducts = require("../helpers/updateBestSellerProducts");
+const ProductVariant = require("../models/ProductVariant");
 
 // CREATE transaction
 exports.createTransaction = async (req, res) => {
   try {
-    const { products, name, phoneNumber, message, shippingMethod, paymentMethod, transferProvider, shippingAddress, voucherCode } = req.body;
+    const {
+      products,
+      name,
+      phoneNumber,
+      message,
+      shippingMethod,
+      paymentMethod,
+      transferProvider,
+      shippingAddress,
+      voucherCode,
+    } = req.body;
 
     const userId = req.user.id;
 
@@ -16,7 +27,11 @@ exports.createTransaction = async (req, res) => {
     for (const item of products) {
       const key = `${item.product}-${item.size}`;
       if (!productMap[key]) {
-        productMap[key] = { product: item.product, size: item.size, quantity: 1 };
+        productMap[key] = {
+          product: item.product,
+          size: item.size,
+          quantity: 1,
+        };
       } else {
         productMap[key].quantity += 1;
       }
@@ -31,8 +46,30 @@ exports.createTransaction = async (req, res) => {
       const { product, size, quantity } = productMap[key];
 
       const productData = await Product.findById(product);
+
       if (!productData) {
-        return res.status(400).json({ message: `Product not found: ${product}` });
+        return res
+          .status(400)
+          .json({ message: `Product not found: ${product}` });
+      }
+
+      const variant = await ProductVariant.findOne({
+        product,
+        size,
+      });
+
+      if (!variant) {
+        return res
+          .status(400)
+          .json({ message: `${productData.name} size ${size} not found` });
+      }
+
+      if (variant.stock < quantity) {
+        return res
+          .status(400)
+          .json({
+            message: `${productData.name} size ${size} only has${variant.stock} stock left`,
+          });
       }
 
       let discountPercent = 0;
@@ -45,7 +82,8 @@ exports.createTransaction = async (req, res) => {
 
       if (discount) {
         discountPercent = discount.discountPercent;
-        finalPricePerUnit = productData.price - productData.price * (discountPercent / 100);
+        finalPricePerUnit =
+          productData.price - productData.price * (discountPercent / 100);
       }
 
       const subtotal = finalPricePerUnit * quantity;
@@ -66,11 +104,21 @@ exports.createTransaction = async (req, res) => {
       });
     }
 
-    const status = paymentMethod === "Cash on Delivery" ? "Processing" : "Waiting for Payment";
-    // Payment Expired (Tranfer)
-    const paymentExpiredAt = paymentMethod === "Transfer" ? new Date(Date.now() + 60 * 60 * 1000) : null;
+    variant.stock -= quantity;
+    await variant.save();
 
-    const paymentStatus = paymentMethod === "Cash on Delivery" ? "Paid" : "Waiting for Payment";
+    const status =
+      paymentMethod === "Cash on Delivery"
+        ? "Processing"
+        : "Waiting for Payment";
+    // Payment Expired (Tranfer)
+    const paymentExpiredAt =
+      paymentMethod === "Transfer"
+        ? new Date(Date.now() + 60 * 60 * 1000)
+        : null;
+
+    const paymentStatus =
+      paymentMethod === "Cash on Delivery" ? "Paid" : "Waiting for Payment";
 
     const newTransaction = new Transaction({
       user: userId,
@@ -92,7 +140,9 @@ exports.createTransaction = async (req, res) => {
 
     await newTransaction.save();
 
-    res.status(201).json({ message: "Transaction saved", transaction: newTransaction });
+    res
+      .status(201)
+      .json({ message: "Transaction saved", transaction: newTransaction });
   } catch (error) {
     console.error("Error creating transaction", error.message);
     res.status(500).json({ message: "Failed to create transaction" });
@@ -110,7 +160,22 @@ exports.payTransaction = async (req, res) => {
     }
 
     // Check  Expired
-    if (transaction.paymentExpiredAt && new Date() > transaction.paymentExpiredAt) {
+    if (
+      transaction.paymentExpiredAt &&
+      new Date() > transaction.paymentExpiredAt
+    ) {
+      for (const item of transaction.products) {
+        const variant = await ProductVariant.findOne({
+          product: item.product,
+          size: item.size,
+        });
+      }
+
+      if (variant) {
+        variant.stock += quantity;
+        await variant.save();
+      }
+
       transaction.paymentStatus = "Expired";
 
       await transaction.save();
@@ -136,19 +201,28 @@ exports.payTransaction = async (req, res) => {
 exports.getUserTransaction = async (req, res) => {
   try {
     if (req.user.role !== "user") {
-      return res.status(403).json({ message: "Only users can view their transactions" });
+      return res
+        .status(403)
+        .json({ message: "Only users can view their transactions" });
     }
     const userId = req.user.id;
-    const transactions = await Transaction.find({ user: userId }).populate("products.product", "name price image");
+    const transactions = await Transaction.find({ user: userId }).populate(
+      "products.product",
+      "name price image",
+    );
     res.json(transactions);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch transactions history", error });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch transactions history", error });
   }
 };
 
 exports.getAllTransaction = async (req, res) => {
   try {
-    const transactions = await Transaction.find().populate("user", "name email").populate("products.product", "name price image");
+    const transactions = await Transaction.find()
+      .populate("user", "name email")
+      .populate("products.product", "name price image");
     res.json(transactions);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch transactions", error });
@@ -178,7 +252,11 @@ exports.updateTransactionStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
-    const transaction = await Transaction.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    const transaction = await Transaction.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true },
+    );
 
     if (!transaction) {
       return res.status(404).json({ message: "Transaction not found" });
@@ -186,7 +264,12 @@ exports.updateTransactionStatus = async (req, res) => {
 
     res.status(200).json(transaction);
   } catch (err) {
-    res.status(500).json({ message: "Failed to update transaction status", error: err.message });
+    res
+      .status(500)
+      .json({
+        message: "Failed to update transaction status",
+        error: err.message,
+      });
   }
 };
 
@@ -205,29 +288,45 @@ exports.cancelTransaction = async (req, res) => {
       return res.status(404).json({ message: "Unauthorized" });
     }
 
-    if (transaction.status === "Shipped" || transaction.status === "Delivered") {
-      return res.status(400).json({ message: "The order has been shipped and cannot be cancelled." });
+    if (
+      transaction.status === "Shipped" ||
+      transaction.status === "Delivered"
+    ) {
+      return res
+        .status(400)
+        .json({
+          message: "The order has been shipped and cannot be cancelled.",
+        });
+    }
+
+    if (
+      transaction.status === "Cancelled" ||
+      transaction.status === "Expired"
+    ) {
+      return res.status(400).json({ message: "Order already cancelled" });
+    }
+
+    for (const item of transaction.product) {
+      const variant = await ProductVariant.findOne({
+        product: item.product,
+        size: item.size,
+      });
+    }
+    if (variant) {
+      variant.stock += quantity;
+      await variant.save();
     }
 
     transaction.status = "Cancelled";
     await transaction.save();
 
-    res.status(200).json({ message: "Transaction cancel succesfully", transaction });
+    res
+      .status(200)
+      .json({ message: "Transaction cancel succesfully", transaction });
   } catch (err) {
-    res.status(500).json({ message: "Failed cancelled transaction", error: err.message });
-  }
-};
-
-exports.getLatestTransaction = async (req, res) => {
-  try {
-    const latest = await Transaction.findOne({ user: req.user.id, status: "Waiting Confirmation" }).sort({ createdAt: -1 }).populate("products.product");
-
-    if (!latest) return res.status(404).json({ message: "No recent transaction found" });
-
-    res.json(latest);
-  } catch (error) {
-    console.error("Error fetching latest transaction:", error);
-    res.status(500).json({ message: "Server error" });
+    res
+      .status(500)
+      .json({ message: "Failed cancelled transaction", error: err.message });
   }
 };
 
@@ -263,8 +362,12 @@ exports.confirmReceived = async (req, res) => {
     // Update best seller products
     await updateBestSellerProducts();
 
-    res.status(200).json({ message: "Order confirmed as received", transaction });
+    res
+      .status(200)
+      .json({ message: "Order confirmed as received", transaction });
   } catch (err) {
-    res.status(500).json({ message: "Failed to confirm order", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to confirm order", error: err.message });
   }
 };

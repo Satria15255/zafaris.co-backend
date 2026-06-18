@@ -1,4 +1,5 @@
 const ProductVariant = require("../models/ProductVariant");
+const Product = require("../models/Product");
 
 exports.createVariant = async (req, res) => {
   try {

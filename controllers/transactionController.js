@@ -65,11 +65,9 @@ exports.createTransaction = async (req, res) => {
       }
 
       if (variant.stock < quantity) {
-        return res
-          .status(400)
-          .json({
-            message: `${productData.name} size ${size} only has${variant.stock} stock left`,
-          });
+        return res.status(400).json({
+          message: `${productData.name} size ${size} only has${variant.stock} stock left`,
+        });
       }
 
       let discountPercent = 0;
@@ -102,10 +100,10 @@ exports.createTransaction = async (req, res) => {
         pricePerUnit: finalPricePerUnit,
         subtotal,
       });
-    }
 
-    variant.stock -= quantity;
-    await variant.save();
+      variant.stock -= quantity;
+      await variant.save();
+    }
 
     const status =
       paymentMethod === "Cash on Delivery"
@@ -169,11 +167,11 @@ exports.payTransaction = async (req, res) => {
           product: item.product,
           size: item.size,
         });
-      }
 
-      if (variant) {
-        variant.stock += quantity;
-        await variant.save();
+        if (variant) {
+          variant.stock += quantity;
+          await variant.save();
+        }
       }
 
       transaction.paymentStatus = "Expired";
@@ -183,6 +181,10 @@ exports.payTransaction = async (req, res) => {
       return res.status(400).json({
         message: "Payment Expired",
       });
+    }
+
+    if (transaction.paymentStatus === "Paid") {
+      return res.status(400).json({ message: "Order already paid" });
     }
 
     transaction.transferProvider = transferProvider;
@@ -264,12 +266,10 @@ exports.updateTransactionStatus = async (req, res) => {
 
     res.status(200).json(transaction);
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        message: "Failed to update transaction status",
-        error: err.message,
-      });
+    res.status(500).json({
+      message: "Failed to update transaction status",
+      error: err.message,
+    });
   }
 };
 
@@ -292,11 +292,9 @@ exports.cancelTransaction = async (req, res) => {
       transaction.status === "Shipped" ||
       transaction.status === "Delivered"
     ) {
-      return res
-        .status(400)
-        .json({
-          message: "The order has been shipped and cannot be cancelled.",
-        });
+      return res.status(400).json({
+        message: "The order has been shipped and cannot be cancelled.",
+      });
     }
 
     if (
@@ -306,15 +304,16 @@ exports.cancelTransaction = async (req, res) => {
       return res.status(400).json({ message: "Order already cancelled" });
     }
 
-    for (const item of transaction.product) {
+    for (const item of transaction.products) {
       const variant = await ProductVariant.findOne({
         product: item.product,
         size: item.size,
       });
-    }
-    if (variant) {
-      variant.stock += quantity;
-      await variant.save();
+
+      if (variant) {
+        variant.stock += quantity;
+        await variant.save();
+      }
     }
 
     transaction.status = "Cancelled";
@@ -347,6 +346,10 @@ exports.confirmReceived = async (req, res) => {
 
     if (transaction.status !== "Delivered") {
       return res.status(400).json({ message: "Order is not delivered yet" });
+    }
+
+    if (transaction.status === "Completed") {
+      return res.status(400).json({ message: "Order already completed!" });
     }
 
     transaction.status = "Completed";

@@ -66,7 +66,7 @@ exports.getDashboardStats = async (req, res) => {
 
 		const totalStock = stockResult[0]?.totalStock || 0;
 		const totalRevenue = revenueResult[0]?.totalRevenue || 0;
-		const totalProductSold = soldResult[0]?.totalProductSold || 0;
+		const totalProductSold = soldResult[0]?.totalSold || 0;
 
 		res.status(200).json({
 			totalProducts,

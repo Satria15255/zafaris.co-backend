@@ -6,12 +6,13 @@ exports.getSalesChart = async (req, res) => {
 		const range = req.query.range || "7d";
 		const startDate = req.query.startDate;
 		const endDate = req.query.endDate;
-
+		const isCustomRange = startDate && endDate;
 		// Date range
 		const now = new Date();
 
 		let start = new Date();
 		let end = now;
+		let customRangeDays = 0;
 
 		if (range === "7d") {
 			start.setDate(now.getDate() - 7);
@@ -24,6 +25,10 @@ exports.getSalesChart = async (req, res) => {
 		} else if (startDate && endDate) {
 			start = new Date(startDate);
 			end = new Date(endDate);
+		} else if (isCustomRange) {
+			customRangeDays = Math.ceil(
+				(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+			);
 		}
 
 		// Grouping stage
@@ -35,7 +40,11 @@ exports.getSalesChart = async (req, res) => {
 			},
 		};
 
-		if (range === "7d" || range === "30d") {
+		if (
+			range === "7d" ||
+			range === "30d" ||
+			(isCustomRange && customRangeDays <= 31)
+		) {
 			groupStage = {
 				_id: {
 					year: {
@@ -63,7 +72,6 @@ exports.getSalesChart = async (req, res) => {
 				...salesSum,
 			};
 		} else {
-			// 1y dan custom
 			groupStage = {
 				_id: {
 					year: {
@@ -127,7 +135,11 @@ exports.getSalesChart = async (req, res) => {
 		const formattedData = salesData.map((item) => {
 			let label;
 
-			if (range === "7d" || range === "30d") {
+			if (
+				range === "7d" ||
+				range === "30d" ||
+				(isCustomRange && customRangeDays <= 31)
+			) {
 				label = `${item._id.day} ${monthNames[item._id.month]}`;
 			} else if (range === "90d") {
 				label = `Week ${item._id.week}`;

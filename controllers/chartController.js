@@ -22,10 +22,10 @@ exports.getSalesChart = async (req, res) => {
 			start.setDate(now.getDate() - 90);
 		} else if (range === "1y") {
 			start.setFullYear(now.getFullYear() - 1);
-		} else if (startDate && endDate) {
+		} else if (isCustomRange) {
 			start = new Date(startDate);
 			end = new Date(endDate);
-		} else if (isCustomRange) {
+
 			customRangeDays = Math.ceil(
 				(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
 			);
@@ -91,9 +91,7 @@ exports.getSalesChart = async (req, res) => {
 				$gte: start,
 				$lte: end,
 			},
-			status: {
-				$ne: "Cancelled",
-			},
+			paymentStatus: "Paid",
 		};
 
 		// Aggregate
@@ -140,7 +138,7 @@ exports.getSalesChart = async (req, res) => {
 				range === "30d" ||
 				(isCustomRange && customRangeDays <= 31)
 			) {
-				label = `${item._id.day} ${monthNames[item._id.month]}`;
+				label = `${monthNames[item._id.month]} ${item._id.year}`;
 			} else if (range === "90d") {
 				label = `Week ${item._id.week}`;
 			} else {
@@ -153,7 +151,58 @@ exports.getSalesChart = async (req, res) => {
 			};
 		});
 
-		res.status(200).json(formattedData);
+		const salesMap = new Map();
+
+		formattedData.forEach((item) => {
+			salesMap.set(item.label, item.sales);
+		});
+
+		let finalData = [];
+
+		if (
+			range === "7d" ||
+			range === "30d" ||
+			(isCustomRange && customRangeDays <= 31)
+		) {
+			const currentDate = new Date(start);
+
+			while (currentDate <= end) {
+				const day = currentDate.getDate();
+
+				const month = monthNames[currentDate.getMonth() + 1];
+
+				const label = `${day} ${month}`;
+
+				finalData.push({
+					label,
+					sales: salesMap.get(label) || 0,
+				});
+
+				currentDate.setDate(currentDate.getDate() + 1);
+			}
+		} else if (range === "1y" || (isCustomRange && customRangeDays > 31)) {
+			const currentDate = new Date(start);
+
+			currentDate.setDate(1);
+
+			while (currentDate <= end) {
+				const label = monthNames[currentDate.getMonth() + 1];
+
+				finalData.push({
+					label,
+					sales: salesMap.get(label) || 0,
+				});
+
+				currentDate.setMonth(currentDate.getMonth() + 1);
+			}
+		} else {
+			finalData = formattedData;
+		}
+
+		start.setHours(0, 0, 0, 0);
+		end.setHours(23, 59, 59, 999);
+
+		res.status(200).json(finalData);
 	} catch (error) {
 		res.status(500).json({
 			message: error.message,

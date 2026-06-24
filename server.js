@@ -12,6 +12,7 @@ const cartRoutes = require("./routes/cartRoutes");
 const userRoutes = require("./routes/userRoutes");
 const productVariantRoutes = require("./routes/productVariantRoutes");
 const dashboardStats = require("./routes/dashboardRoutes");
+const chartRoutes = require("./routes/chartRoutes");
 
 dotenv.config();
 connectDB();
@@ -42,6 +43,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/admin", userRoutes);
 app.use("/api/productvariant", productVariantRoutes);
 app.use("/api/dashboard-stats", dashboardStats);
+app.use("/api/sales-chart", chartRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

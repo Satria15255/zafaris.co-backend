@@ -85,6 +85,9 @@ exports.getSalesChart = async (req, res) => {
 			};
 		}
 
+		start.setHours(0, 0, 0, 0);
+		end.setHours(23, 59, 59, 999);
+
 		// Match stage
 		const matchStage = {
 			createdAt: {
@@ -138,7 +141,7 @@ exports.getSalesChart = async (req, res) => {
 				range === "30d" ||
 				(isCustomRange && customRangeDays <= 31)
 			) {
-				label = `${monthNames[item._id.month]} ${item._id.year}`;
+				label = `${item._id.day} ${monthNames[item._id.month]}`;
 			} else if (range === "90d") {
 				label = `Week ${item._id.week}`;
 			} else {
@@ -199,9 +202,8 @@ exports.getSalesChart = async (req, res) => {
 			finalData = formattedData;
 		}
 
-		start.setHours(0, 0, 0, 0);
-		end.setHours(23, 59, 59, 999);
-
+		console.log("formattedData:", formattedData);
+		console.log("finalData:", finalData);
 		res.status(200).json(finalData);
 	} catch (error) {
 		res.status(500).json({

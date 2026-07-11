@@ -136,6 +136,12 @@ exports.createTransaction = async (req, res) => {
       status,
     });
 
+    await User.findByIdAndUpdate(userId, {
+      $inc: {
+        totalOrders: 1,
+      },
+    });
+
     await newTransaction.save();
 
     res

@@ -7,7 +7,7 @@ exports.getUser = async (req, res) => {
     const users = await User.find().select("-password");
     res.json(users);
   } catch (err) {
-    res.status(500).json({ message: "INternal server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -19,7 +19,10 @@ exports.getUserTransaction = async (req, res) => {
 
     const userId = new mongoose.Types.ObjectId(req.params.id);
 
-    const transactions = await Transaction.find({ user: userId }).populate("user", "name email");
+    const transactions = await Transaction.find({ user: userId }).populate(
+      "user",
+      "name email",
+    );
 
     res.json(transactions);
   } catch (err) {

@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: " ",
     },
+    totalOrders: {
+      type: Number,
+      default: 0,
+    },
     favorites: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -54,6 +58,5 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.matchPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
-
 
 module.exports = mongoose.models.User || mongoose.model("User", userSchema);

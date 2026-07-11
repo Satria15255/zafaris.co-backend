@@ -7,7 +7,8 @@ exports.registerUser = async (req, res) => {
     const { name, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "Email already exists" });
+    if (existingUser)
+      return res.status(400).json({ message: "Email already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -30,11 +31,18 @@ exports.loginUser = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Wrong Password" });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      },
+    );
 
-    res.json({ token, user: { id: user._id, name: user.name, role: user.role } });
+    res.json({
+      token,
+      user: { id: user._id, name: user.name, role: user.role },
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
@@ -114,5 +122,32 @@ exports.updatePassword = async (req, res) => {
     res.status(500).json({
       message: error.message,
     });
+  }
+};
+
+exports.updateUserAddress = async (req, res) => {
+  try {
+    const fulledAddress = [];
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "user not found" });
+    }
+
+    fulledAddress.push({
+      spesificAddress: req.body.spesificAddress,
+      country: req.body.country,
+      city: req.body.city,
+    });
+
+    user.address = fulledAddress;
+
+    await user.save();
+    res.status(200).json({ message: "Address updated", user });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Update Address Failed :(", error: error.message });
+    console.log(error);
   }
 };

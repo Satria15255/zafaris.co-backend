@@ -19,18 +19,21 @@ const userSchema = new mongoose.Schema(
       {
         country: {
           type: String,
+          default: "",
         },
         city: {
           type: String,
+          default: "",
         },
         spesificAddress: {
           type: String,
+          default: "",
         },
       },
     ],
     phoneNumber: {
       type: String,
-      default: " ",
+      default: "",
     },
     totalOrders: {
       type: Number,

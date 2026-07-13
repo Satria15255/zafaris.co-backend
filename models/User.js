@@ -15,22 +15,25 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    address: [
-      {
-        country: {
-          type: String,
-          default: "",
+    address: {
+      type: [
+        {
+          country: {
+            type: String,
+            default: "",
+          },
+          city: {
+            type: String,
+            default: "",
+          },
+          spesificAddress: {
+            type: String,
+            default: "",
+          },
         },
-        city: {
-          type: String,
-          default: "",
-        },
-        spesificAddress: {
-          type: String,
-          default: "",
-        },
-      },
-    ],
+      ],
+      default: [],
+    },
     phoneNumber: {
       type: String,
       default: "",

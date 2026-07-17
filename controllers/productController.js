@@ -4,7 +4,9 @@ const DailyDiscount = require("../models/DailyDiscount");
 
 exports.getLatestProducts = async (req, res) => {
   try {
-    const latestProducts = await Product.find().sort({ createdAt: -1 }).limit(9);
+    const latestProducts = await Product.find()
+      .sort({ createdAt: -1 })
+      .limit(9);
     res.json(latestProducts);
   } catch (error) {
     console.error("Failed fecthing latest product", error);
@@ -14,7 +16,7 @@ exports.getLatestProducts = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().populate("variants");
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch products" });
@@ -23,8 +25,9 @@ exports.getAllProducts = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate("variants");
     if (!product) return res.status(404).json({ message: "Product not found" });
+
     const discount = await DailyDiscount.findOne({
       productId: product._id,
       expiresAt: { $gt: new Date() },
@@ -50,9 +53,17 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ message: "IMage si required" });
     }
 
-    const sizes = typeof req.body.sizes === "string" ? req.body.sizes.split(",").map(Number) : req.body.sizes;
+    const sizes =
+      typeof req.body.sizes === "string"
+        ? req.body.sizes.split(",").map(Number)
+        : req.body.sizes;
 
-    const product = new Product({ ...req.body, sizes, image: req.file.path, createdBy: req.user?.id || null });
+    const product = new Product({
+      ...req.body,
+      sizes,
+      image: req.file.path,
+      createdBy: req.user?.id || null,
+    });
     const saved = await product.save();
     return res.status(201).json(saved);
   } catch (err) {
@@ -133,6 +144,8 @@ exports.getBestSellerProducts = async (req, res) => {
     res.json(bestSellers);
   } catch (err) {
     console.error("Error fetching best seller", err);
-    res.status(500).json({ message: "Failed get best sellers products", err: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed get best sellers products", err: err.message });
   }
 };

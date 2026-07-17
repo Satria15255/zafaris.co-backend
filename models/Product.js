@@ -31,4 +31,18 @@ const productSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+productSchema.virtual("variants", {
+  ref: "ProductVariant",
+  localField: "_id",
+  foreignField: "product",
+});
+
+productSchema.set("toJSON", {
+  virtuals: true,
+});
+
+productSchema.set("toObject", {
+  virtuals: true,
+});
+
 module.exports = mongoose.model("Product", productSchema);

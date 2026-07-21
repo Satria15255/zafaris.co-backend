@@ -1,6 +1,7 @@
 const Product = require("../models/Product");
 const ProductVariant = require("../models/ProductVariant");
 const Transaction = require("../models/Transaction");
+const getSummary = require("../services/dashboard/summary");
 
 exports.getDashboardStats = async (req, res) => {
 	try {
@@ -81,5 +82,17 @@ exports.getDashboardStats = async (req, res) => {
 			message: "Failed get Dashboard Statistic",
 			error: error.message,
 		});
+	}
+};
+
+exports.getDashboardSummary = async (req, res) => {
+	try {
+		const range = req.query.range || "7d";
+
+		const summary = await getSummary(range);
+
+		res.status(200).json(summary);
+	} catch (error) {
+		res.status(500).json({ message: error.message });
 	}
 };

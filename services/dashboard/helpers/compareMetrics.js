@@ -10,27 +10,27 @@ const compareMetrics = (current = 0, previous = 0) => {
 	}
 
 	const TREND = {
-		UP : "up",
-		DOWN : "down",
-		NEUTRAL : "neutral"
-	}
+		UP: "up",
+		DOWN: "down",
+		NEUTRAL: "neutral",
+	};
 
 	let trend = TREND.NEUTRAL;
 
 	if (difference > 0) {
 		trend = TREND.UP;
 	} else if (difference < 0) {
-		trend = TRENd.DOWN
+		trend = TREND.DOWN;
 	}
 
 	return {
 		current,
 		previous,
 		difference,
-		percentage = Number(percentage.toFixed(1)),
+		percentage: Number(percentage.toFixed(1)),
 		trend,
-		isPositive = difference > 0
-	}
+		isPositive: difference > 0,
+	};
 };
 
-module.exports = compareMetrics
+module.exports = compareMetrics;

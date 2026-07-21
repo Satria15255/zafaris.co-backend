@@ -1,85 +1,78 @@
-const Transactions = require(../../models/Transaction)
-const getDateRange = require(../helpers/getDateRange)
-const compareMetrics = require(../helpers/compareMetrics)
+const Transactions = require("../../../models/Transaction");
+const getDateRange = require("../helpers/getDateRange");
+const compareMetrics = require("../helpers/compareMetrics");
 
 const getRevenueSummary = async (range) => {
-	const {current,previous} = getDateRange(range)
+	const { current, previous } = getDateRange(range);
 
-	const = [
-		totalRevenue,
-		currentRevenue,
-		previousRevenue
-	] = await Promise.all ([
+	const [totalRevenue, currentRevenue, previousRevenue] = await Promise.all([
 		Transactions.aggregate([
 			{
-				$match :  {
-					status : "Completed"
-				}
+				$match: {
+					status: "Completed",
+				},
 			},
 			{
-				$group  : {
-					_id : null,
-					totalRevenue:{
-						$sum  : "$totalPrice"
-					}
-				}
-			}
+				$group: {
+					_id: null,
+					totalRevenue: {
+						$sum: "$totalPrice",
+					},
+				},
+			},
 		]),
 		Transactions.aggregate([
 			{
-				$match : {
-					status : "Completed",
+				$match: {
+					status: "Completed",
 
-					createdAt : {
-						$gte : current.start,
-						$lte : current.end
+					createdAt: {
+						$gte: current.start,
+						$lte: current.end,
+					},
+				},
+			},
+			{
+				$group: {
+					_id: null,
 
-				}
-			}
-		},
-		{
-			$group :{
-				_id :  null,
-
-				totalRevenue : {
-					$sum : "totalPrice"
-				}
-			}
-		}
+					totalRevenue: {
+						$sum: "totalPrice",
+					},
+				},
+			},
 		]),
 		Transactions.aggregate([
 			{
-				$match : {
-					status : "Completed",
+				$match: {
+					status: "Completed",
 
-					createdAt : {
-						$gte : previous.start,
-						$lte : previous.end
+					createdAt: {
+						$gte: previous.start,
+						$lte: previous.end,
+					},
+				},
+			},
+			{
+				$group: {
+					_id: null,
 
-				}
-			}
-		},
-		{
-			$group :{
-				_id :  null,
-
-				totalRevenue : {
-					$sum : "totalPrice"
-				}
-			}
-		}
+					totalRevenue: {
+						$sum: "totalPrice",
+					},
+				},
+			},
 		]),
-	])
+	]);
 
-	const total = totalRevenue[0]?.totalRevenue || 0
-	const current = currentRevenue[0]?.totalRevenue || 0
-	const previous =  previousRevenue[0]?.totalRevenue || 0
+	const total = totalRevenue[0]?.totalRevenue || 0;
+	const currentValue = currentRevenue[0]?.totalRevenue || 0;
+	const previousValue = previousRevenue[0]?.totalRevenue || 0;
 
 	return {
 		total: total,
-		...compareMetrics(
-			current,previous)
-	}
-}
+		...compareMetrics(currentValue, previousValue),
+	};
+};
 
-module.exports = getRevenueSummary
+module.exports = getRevenueSummary;

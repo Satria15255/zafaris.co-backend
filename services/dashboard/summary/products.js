@@ -1,35 +1,31 @@
-const Product = require(../../models/Product)
-const getDateRange = require(../helpers/getDateRange)
-const compareMetrics = require(../helpers/compareMetrics)
+const Product = require("../../../models/Product");
+const getDateRange = require("../helpers/getDateRange");
+const compareMetrics = require("../helpers/compareMetrics");
 
 const getProductsSummary = async (range) => {
-	const {current,previous} = getDateRange(range)
+	const { current, previous } = getDateRange(range);
 
-	const = [
-		totalProducts,
-		currentProducts,
-		previousProducts
-	] = await Promise.all ([
-		Product.countDocuments(),
-		Product.countDocuments({
-			createdAt : {
-				$gte : current.start,
-				$lte : current.end
-			}
-		}),
-		Product.countDocuments({
-			createdAt:{
-				$gte : previous.start,
-				$lte  : previous.end
-			}
-		})
-	])
+	const [totalProducts, currentProducts, previousProducts] =
+		await Promise.all([
+			Product.countDocuments(),
+			Product.countDocuments({
+				createdAt: {
+					$gte: current.start,
+					$lte: current.end,
+				},
+			}),
+			Product.countDocuments({
+				createdAt: {
+					$gte: previous.start,
+					$lte: previous.end,
+				},
+			}),
+		]);
 
 	return {
 		total: totalProducts,
-		...compareMetrics(
-			currentProducts,previousProducts)
-	}
-}
+		...compareMetrics(currentProducts, previousProducts),
+	};
+};
 
-module.exports = getProductsSummary
+module.exports = getProductsSummary;

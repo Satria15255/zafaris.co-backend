@@ -1,0 +1,23 @@
+const  getOrdersSummary   = require("./orders")
+const getProductsSummary    = require("./products")
+const getRevenueSummary = require("./revenue")
+const getTransactionSummary  = require("./transaction")
+const getUsersSummary = require("./users")
+
+const =  [
+	orders, products, revenue, transaction, users
+] = await Promise.all([
+	 getOrdersSummary(range),
+	 getProductsSummary(range),
+	 getRevenueSummary(range),
+	 getTransactionSummary(range),
+	 getUsersSummary(range)
+])
+
+return{
+	orders,
+	products,
+	revenue,
+	transaction,
+	users
+}

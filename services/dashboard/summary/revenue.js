@@ -76,7 +76,7 @@ const getRevenueSummary = async (range) => {
 	const previous =  previousRevenue[0]?.totalRevenue || 0
 
 	return {
-		total: totalRevenue,
+		total: total,
 		...compareMetrics(
 			current,previous)
 	}

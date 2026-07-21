@@ -2,7 +2,7 @@ const Users = require(../../models/User)
 const getDateRange = require(../helpers/getDateRange)
 const compareMetrics = require(../helpers/compareMetrics)
 
-const getProductsSummary = async (range) => {
+const getUsersSummary = async (range) => {
 	const {current,previous} = getDateRange(range)
 
 	const = [
@@ -32,4 +32,4 @@ const getProductsSummary = async (range) => {
 	}
 }
 
-module.exports = getProductsSummary
+module.exports = getUsersSummary

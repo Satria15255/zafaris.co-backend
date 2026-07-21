@@ -7,7 +7,7 @@ const {
 
 const router = express.Router();
 
-router.get("/", adminMiddleware, dashboardController.getDashboardStats);
+router.get("/", dashboardController.getDashboardStats);
 router.get("/summary", dashboardController.getDashboardSummary);
 
 module.exports = router;

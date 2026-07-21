@@ -37,7 +37,7 @@ const getRevenueSummary = async (range) => {
 					_id: null,
 
 					totalRevenue: {
-						$sum: "totalPrice",
+						$sum: "$totalPrice",
 					},
 				},
 			},
@@ -58,7 +58,7 @@ const getRevenueSummary = async (range) => {
 					_id: null,
 
 					totalRevenue: {
-						$sum: "totalPrice",
+						$sum: "$totalPrice",
 					},
 				},
 			},

@@ -7,8 +7,9 @@ const {
 
 const router = express.Router();
 
-router.get("/", dashboardController.getDashboardStats);
 router.get("/summary", dashboardController.getDashboardSummary);
-router.get("/products-summary", dashboardController.getProductsSummary);
+router.get("/products", dashboardController.getProductsSummary);
+router.get("/orders", dashboardController.getOrdersSummary);
+router.get("/users", dashboardController.getUsersSummary);
 
 module.exports = router;

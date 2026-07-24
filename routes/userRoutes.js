@@ -19,11 +19,4 @@ router.get(
 	userController.getUserTransaction,
 );
 
-router.get(
-	"/user/customer-stats",
-	authMiddleware,
-	adminMiddleware,
-	userController.getUserStats,
-);
-
 module.exports = router;

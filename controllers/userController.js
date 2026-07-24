@@ -30,24 +30,3 @@ exports.getUserTransaction = async (req, res) => {
     res.status(500).json({ message: "Error get user transaction", err });
   }
 };
-
-exports.getUserStats = async (req, res) => {
-  try {
-    const totalUsersAccounts = await User.countDocuments({
-      role: "user",
-    });
-    const totalAdminAccounts = await User.countDocuments({
-      role: "admin",
-    });
-    const totalAccounts = totalUsersAccounts + totalAdminAccounts;
-
-    res
-      .status(200)
-      .json({ totalUsersAccounts, totalAdminAccounts, totalAccounts });
-  } catch (error) {
-    console.log(error);
-    res
-      .status(500)
-      .json({ message: "Failed  get total users", error: error.message });
-  }
-};

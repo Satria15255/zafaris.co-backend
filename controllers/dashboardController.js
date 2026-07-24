@@ -2,6 +2,7 @@ const Product = require("../models/Product");
 const ProductVariant = require("../models/ProductVariant");
 const Transaction = require("../models/Transaction");
 const getSummary = require("../services/dashboard/summary");
+const getProductsSummary = require("../services/products/products.service");
 
 exports.getDashboardStats = async (req, res) => {
 	try {
@@ -90,6 +91,18 @@ exports.getDashboardSummary = async (req, res) => {
 		const range = req.query.range || "7d";
 
 		const summary = await getSummary(range);
+
+		res.status(200).json(summary);
+	} catch (error) {
+		res.status(500).json({ message: error.message });
+	}
+};
+
+exports.getProductsSummary = async (req, res) => {
+	try {
+		const range = req.query.range || "7d";
+
+		const summary = await getProductsSummary(range);
 
 		res.status(200).json(summary);
 	} catch (error) {

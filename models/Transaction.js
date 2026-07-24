@@ -14,7 +14,11 @@ const transactionSchema = new mongoose.Schema(
     phoneNumber: Number,
     products: [
       {
-        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
         size: { type: Number, required: true },
         quantity: { type: Number, required: true },
         pricePerUnit: { type: Number, required: true },
@@ -28,8 +32,16 @@ const transactionSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ["Waiting for Payment", "Processing", "Shipped", "Delivered", "Completed", "Cancelled"],
-      default: "Waiting for Payment",
+      enum: [
+        "Pending",
+        "Processing",
+        "Shipped",
+        "Delivered",
+        "Completed",
+        "Cancelled",
+        "Expired",
+      ],
+      default: "Pending",
     },
     totalProducts: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
@@ -47,8 +59,8 @@ const transactionSchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ["Waiting for Payment", "Paid", "Expired"],
-      default: "Waiting for Payment",
+      enum: ["Unpaid", "Paid", "Expired"],
+      default: "Unpaid",
     },
     paymentExpiredAt: {
       type: Date,

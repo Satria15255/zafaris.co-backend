@@ -1,6 +1,6 @@
 const Transaction = require("../../../models/Transaction");
-const getDateRange = require("../helpers/getDateRange");
-const compareMetrics = require("../helpers/compareMetrics");
+const getDateRange = require("../../shared/helpers/getDateRange");
+const compareMetrics = require("../../shared/helpers/compareMetrics");
 
 const getOrdersSummary = async (range) => {
 	const { current, previous } = getDateRange(range);

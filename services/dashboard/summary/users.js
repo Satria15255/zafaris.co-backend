@@ -1,6 +1,6 @@
 const Users = require("../../../models/User");
-const getDateRange = require("../helpers/getDateRange");
-const compareMetrics = require("../helpers/compareMetrics");
+const getDateRange = require("../../shared/helpers/getDateRange");
+const compareMetrics = require("../../shared/helpers/compareMetrics");
 
 const getUsersSummary = async (range) => {
 	const { current, previous } = getDateRange(range);

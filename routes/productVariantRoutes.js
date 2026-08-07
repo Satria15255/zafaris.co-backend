@@ -7,7 +7,7 @@ const {
 	updateVariant,
 	deleteVariant,
 	generateVariants,
-} = require("../controllers/productVariantController");
+} = require("../controllers/ProductVariantController");
 const {
 	authMiddleware,
 	adminMiddleware,

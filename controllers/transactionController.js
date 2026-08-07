@@ -3,6 +3,7 @@ const Product = require("../models/Product");
 const DailyDiscount = require("../models/DailyDiscount");
 const updateBestSellerProducts = require("../helpers/updateBestSellerProducts");
 const ProductVariant = require("../models/ProductVariant");
+const User = require("../models/User");
 
 // CREATE transaction
 exports.createTransaction = async (req, res) => {
@@ -106,9 +107,7 @@ exports.createTransaction = async (req, res) => {
     }
 
     const status =
-      paymentMethod === "Cash on Delivery"
-        ? "Processing"
-        : "Waiting for Payment";
+      paymentMethod === "Cash on Delivery" ? "Processing" : "Pending";
     // Payment Expired (Tranfer)
     const paymentExpiredAt =
       paymentMethod === "Transfer"
@@ -116,7 +115,7 @@ exports.createTransaction = async (req, res) => {
         : null;
 
     const paymentStatus =
-      paymentMethod === "Cash on Delivery" ? "Paid" : "Waiting for Payment";
+      paymentMethod === "Cash on Delivery" ? "Paid" : "Unpaid";
 
     const newTransaction = new Transaction({
       user: userId,
@@ -149,7 +148,9 @@ exports.createTransaction = async (req, res) => {
       .json({ message: "Transaction saved", transaction: newTransaction });
   } catch (error) {
     console.error("Error creating transaction", error.message);
-    res.status(500).json({ message: "Failed to create transaction" });
+    res
+      .status(500)
+      .json({ message: "Failed to create transaction", error: error.message });
   }
 };
 

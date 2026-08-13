@@ -1,19 +1,22 @@
-const express  = require("express")
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 
 const {
 	createVoucher,
 	getAllVoucher,
-	getVoucherById
+	getVoucherById,
 	updateVoucher,
-	deactiveVoucher
-} = require("../controllers/voucherController")
-const {adminMiddleware,authMiddleware} = require("../middleware/authMiddleware")
+	deactiveVoucher,
+} = require("../controllers/voucherController");
+const {
+	adminMiddleware,
+	authMiddleware,
+} = require("../middleware/authMiddleware");
 
-router.post("/",  createVoucher,adminMiddleware)
-router.get("/",getAllVoucher,authhMiddleware,adminMiddleware)
-router.get("/:id",getVoucherById,adminMiddleware,authhMiddleware)
-router.put("/:id",updateVoucher,adminMiddleware,authhMiddleware)
-router.delete("/:id",deactiveVoucher,adminMiddleware,authhMiddleware)
+router.post("/", createVoucher, adminMiddleware);
+router.get("/", getAllVoucher, authMiddleware, adminMiddleware);
+router.get("/:id", getVoucherById, adminMiddleware, authMiddleware);
+router.put("/:id", updateVoucher, adminMiddleware, authMiddleware);
+router.delete("/:id", deactiveVoucher, adminMiddleware, authMiddleware);
 
-module.exports = router
+module.exports = router;

@@ -29,21 +29,21 @@ exports.createVoucher = async (req, res) => {
 				.json({ message: "Required Voucher fields are missing" });
 		}
 
-		// Validate percentage
-		if (
-			(discount.type === "percentage" && discount.value <= 0) ||
-			discount.value > 100
-		) {
-			return res.status(400).json({
-				message: "Percentage discount must between 1 and 100",
-			});
-		}
-
 		// Validate fixed discount
 		if (discount.type === "fixed" && discount.value <= 0) {
 			return res
 				.status(400)
 				.json({ message: "Fixed discount must greater than 0" });
+		}
+
+		// Validate percentage
+		if (
+			discount.type === "percentage" &&
+			(discount.value <= 0 || discount.value > 100)
+		) {
+			return res.status(400).json({
+				message: "Percentage discount must between 1 and 100",
+			});
 		}
 
 		// Validate Voucher Date
@@ -334,15 +334,16 @@ exports.applyVoucher = async (req, res) => {
 		}
 
 		// 3. Calculate subtotal from database cart
-		const subtotal = cart.items.reduce((total, item) => {
+		const subTotal = cart.items.reduce((total, item) => {
 			return total + item.finalPrice * item.quantity;
 		}, 0);
+		console.log(subTotal);
 
 		// 4. Validate voucher
 		const result = await validateVoucher({
 			code,
 			cartItems: cart.items,
-			subtotal,
+			subTotal,
 		});
 
 		// 5. Return result

@@ -43,11 +43,6 @@ const validateVoucher = async ({ code, subTotal, cartItems }) => {
 		throw new Error("Voucher usage limit has been reached");
 	}
 
-	// Check minimum purchase
-	if (subTotal < voucher.minPurchase) {
-		throw new Error(`Minimum purchase is ${voucher.minPurchase}`);
-	}
-
 	// Calculate eligible subtotal
 	let eligibleSubtotal = subTotal;
 
@@ -73,8 +68,14 @@ const validateVoucher = async ({ code, subTotal, cartItems }) => {
 		}, 0);
 	}
 
+	// Check eligible products
 	if (eligibleSubtotal <= 0) {
 		throw new Error("Voucher is not applicable to products in the cart");
+	}
+
+	// Check minimum purchase
+	if (eligibleSubtotal < voucher.minPurchase) {
+		throw new Error(`Minimum purchase is ${voucher.minPurchase}`);
 	}
 
 	// Calculate discount
@@ -104,9 +105,9 @@ const validateVoucher = async ({ code, subTotal, cartItems }) => {
 
 	return {
 		voucher,
+		subTotal,
 		eligibleSubtotal,
 		discountAmount,
-		subTotal,
 		finalTotal,
 	};
 };

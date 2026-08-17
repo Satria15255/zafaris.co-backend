@@ -14,11 +14,11 @@ const {
 	authMiddleware,
 } = require("../middleware/authMiddleware");
 
-router.post("/",adminMiddleware, createVoucher );
+router.post("/", authMiddleware, adminMiddleware, createVoucher);
 router.post("/apply", authMiddleware, applyVoucher);
-router.get("/", authMiddleware, adminMiddleware getAllVoucher);
-router.get("/:id", adminMiddleware, authMiddleware getVoucherById);
-router.put("/:id", adminMiddleware, authMiddleware updateVoucher);
-router.delete("/:id", adminMiddleware, authMiddleware deactiveVoucher);
+router.get("/", authMiddleware, adminMiddleware, getAllVoucher);
+router.get("/:id", adminMiddleware, authMiddleware, getVoucherById);
+router.put("/:id", adminMiddleware, authMiddleware, updateVoucher);
+router.delete("/:id", adminMiddleware, authMiddleware, deactiveVoucher);
 
 module.exports = router;

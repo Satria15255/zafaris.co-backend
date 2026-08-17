@@ -28,12 +28,13 @@ exports.createVoucher = async (req, res) => {
 		}
 
 		// Validate percentage
-		if (discount.value <= 0 || discount.value > 100) {
-			return res
-				.status(400)
-				.json({
-					message: "Percentage discount must be between 1 and 100",
-				});
+		if (
+			(discount.type === "percentage" && discount.value <= 0) ||
+			discount.value > 100
+		) {
+			return res.status(400).json({
+				message: "Percentage discount must between 1 and 100",
+			});
 		}
 
 		// Validate fixed discount
@@ -125,7 +126,7 @@ exports.getVoucherById = async (req, res) => {
 
 		return res
 			.status(200)
-			.jsonn({ message: "Get voucher successfully", voucher });
+			.json({ message: "Get voucher successfully", voucher });
 	} catch (error) {
 		console.error("Get voucher by id error", error);
 

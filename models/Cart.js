@@ -20,7 +20,7 @@ const cartSchema = new mongoose.Schema(
         },
         size: {
           type: Number,
-          reqeuired: true,
+          required: true,
         },
         price: {
           type: Number,
@@ -37,7 +37,7 @@ const cartSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.models.Cart || mongoose.model("Cart", cartSchema);

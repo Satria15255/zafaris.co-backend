@@ -7,16 +7,18 @@ const {
 	getVoucherById,
 	updateVoucher,
 	deactiveVoucher,
+	applyVoucher,
 } = require("../controllers/voucherController");
 const {
 	adminMiddleware,
 	authMiddleware,
 } = require("../middleware/authMiddleware");
 
-router.post("/", createVoucher, adminMiddleware);
-router.get("/", getAllVoucher, authMiddleware, adminMiddleware);
-router.get("/:id", getVoucherById, adminMiddleware, authMiddleware);
-router.put("/:id", updateVoucher, adminMiddleware, authMiddleware);
-router.delete("/:id", deactiveVoucher, adminMiddleware, authMiddleware);
+router.post("/",adminMiddleware, createVoucher );
+router.post("/apply", authMiddleware, applyVoucher);
+router.get("/", authMiddleware, adminMiddleware getAllVoucher);
+router.get("/:id", adminMiddleware, authMiddleware getVoucherById);
+router.put("/:id", adminMiddleware, authMiddleware updateVoucher);
+router.delete("/:id", adminMiddleware, authMiddleware deactiveVoucher);
 
 module.exports = router;

@@ -1,4 +1,6 @@
+const Cart = require("../models/Cart");
 const Voucher = require("../models/Voucher");
+const { validateVoucher } = require("../services/voucher/voucherService");
 
 // create Voucher
 exports.createVoucher = async (req, res) => {
@@ -298,5 +300,71 @@ exports.deactiveVoucher = async (req, res) => {
 		return res
 			.status(500)
 			.json({ message: "Failed deactive voucher", error: error.message });
+	}
+};
+
+// Apply Voucher
+exports.applyVoucher = async (req, res) => {
+	console.log("REQ USER:", req.user);
+	try {
+		const { code } = req.body;
+
+		// 1. Validate code
+		if (!code) {
+			return res.status(400).json({
+				message: "Voucher code is required",
+			});
+		}
+
+		// 2. Get user's cart
+		const cart = await Cart.findOne({
+			userId: req.user.id,
+		});
+
+		if (!cart) {
+			return res.status(404).json({
+				message: "Cart not found",
+			});
+		}
+
+		if (!cart.items || cart.items.length === 0) {
+			return res.status(400).json({
+				message: "Cart is empty",
+			});
+		}
+
+		// 3. Calculate subtotal from database cart
+		const subtotal = cart.items.reduce((total, item) => {
+			return total + item.finalPrice * item.quantity;
+		}, 0);
+
+		// 4. Validate voucher
+		const result = await validateVoucher({
+			code,
+			cartItems: cart.items,
+			subtotal,
+		});
+
+		// 5. Return result
+		return res.status(200).json({
+			message: "Voucher applied successfully",
+			data: {
+				voucher: {
+					id: result.voucher._id,
+					code: result.voucher.code,
+					description: result.voucher.description,
+				},
+				subtotal: result.subtotal,
+				eligibleSubtotal: result.eligibleSubtotal,
+				discountAmount: result.discountAmount,
+				finalTotal: result.finalTotal,
+			},
+		});
+	} catch (error) {
+		console.error("Apply voucher error:", error);
+
+		return res.status(400).json({
+			message: error.message,
+		});
 	}
 };

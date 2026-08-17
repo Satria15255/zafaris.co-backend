@@ -1,6 +1,6 @@
 const Voucher = require("../../models/Voucher");
 
-const validateVoucher = async ({ code, subTotal, cartItems, userId }) => {
+const validateVoucher = async ({ code, subTotal, cartItems }) => {
 	// Validate Input
 	if (!code) {
 		throw new Error("Voucher code is required");
@@ -51,19 +51,25 @@ const validateVoucher = async ({ code, subTotal, cartItems, userId }) => {
 	// Calculate eligible subtotal
 	let eligibleSubtotal = subTotal;
 
-	if (voucher.scope.type === products) {
-		const eligibleProductsIds = voucher.scope.products.map((product) =>
-			product.toString(),
+	if (voucher.scope.type === "All") {
+		eligibleSubtotal = cartItems.reduce((total, item) => {
+			return total + item.finalPrice * item.quantity;
+		}, 0);
+	}
+
+	if (voucher.scope.type === "products") {
+		const eligibleProductsIds = voucher.scope.products.map((productId) =>
+			productId.toString(),
 		);
 
 		eligibleSubtotal = cartItems.reduce((total, item) => {
-			const productId = item.product.toString();
+			const productId = item.productId.toString();
 
 			if (!eligibleProductsIds.includes(productId)) {
 				return total;
 			}
 
-			return total + item.price * item.quantity;
+			return total + item.finalPrice * item.quantity;
 		}, 0);
 	}
 
@@ -98,6 +104,7 @@ const validateVoucher = async ({ code, subTotal, cartItems, userId }) => {
 
 	return {
 		voucher,
+		eligibleSubtotal,
 		discountAmount,
 		subTotal,
 		finalTotal,

@@ -18,6 +18,7 @@ exports.createTransaction = async (req, res) => {
       transferProvider,
       shippingAddress,
       voucherCode,
+      savingPrice,
     } = req.body;
 
     const userId = req.user.id;
@@ -40,6 +41,7 @@ exports.createTransaction = async (req, res) => {
 
     let totalProducts = 0;
     let totalPrice = 0;
+    let finalTotalPrice = 0;
     const productsForTransaction = [];
 
     // Ambil data produk untuk harga dan hitung total price
@@ -88,6 +90,13 @@ exports.createTransaction = async (req, res) => {
       const subtotal = finalPricePerUnit * quantity;
       totalProducts += quantity;
       totalPrice += subtotal;
+      console.log("Price sebelum dsicount", totalPrice);
+
+      finalTotalPrice = totalPrice - savingPrice;
+
+      console.log("Price setelah discount ", finalTotalPrice);
+
+      // const totalFinalPrice = totalPrice - savingPrice;
 
       productsForTransaction.push({
         product: productData.id,
@@ -122,7 +131,7 @@ exports.createTransaction = async (req, res) => {
       products: productsForTransaction,
       name,
       totalProducts,
-      totalPrice,
+      totalPrice: finalTotalPrice,
       phoneNumber,
       message,
       shippingMethod,

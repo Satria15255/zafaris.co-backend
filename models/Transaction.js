@@ -45,6 +45,8 @@ const transactionSchema = new mongoose.Schema(
     },
     totalProducts: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
+    voucherCode: String,
+    discountAmount: { type: Number, required: true, default: 0 },
     finalPrice: { type: Number, required: true, default: 0 },
     message: String,
     shippingMethod: String,
@@ -71,7 +73,6 @@ const transactionSchema = new mongoose.Schema(
     },
 
     shippingAddress: String,
-    voucherCode: String,
   },
   { timestamps: true },
 );

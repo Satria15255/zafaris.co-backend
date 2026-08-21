@@ -4,6 +4,7 @@ const DailyDiscount = require("../models/DailyDiscount");
 const updateBestSellerProducts = require("../helpers/updateBestSellerProducts");
 const ProductVariant = require("../models/ProductVariant");
 const User = require("../models/User");
+const { validateVoucher } = require("../services/voucher/voucherService");
 
 // CREATE transaction
 exports.createTransaction = async (req, res) => {
@@ -18,12 +19,17 @@ exports.createTransaction = async (req, res) => {
       transferProvider,
       shippingAddress,
       voucherCode,
-      savingPrice,
     } = req.body;
 
     const userId = req.user.id;
 
-    // Hitung quantity berdasarkan product + size
+    if (!products || products.length === 0) {
+      return res.status(400).json({
+        message: "Products are required",
+      });
+    }
+
+    // GROUP PRODUCTS
     const productMap = {}; // key = productId-size, value = { product, size, quantity }
 
     for (const item of products) {
@@ -39,12 +45,12 @@ exports.createTransaction = async (req, res) => {
       }
     }
 
+    // CALCULATE PRODUCTS & TOTAL PRICE
     let totalProducts = 0;
     let totalPrice = 0;
-    let finalPrice = 0;
     const productsForTransaction = [];
+    const variantsToUpdate = [];
 
-    // Ambil data produk untuk harga dan hitung total price
     for (const key in productMap) {
       const { product, size, quantity } = productMap[key];
 
@@ -73,6 +79,7 @@ exports.createTransaction = async (req, res) => {
         });
       }
 
+      // Daily Discount
       let discountPercent = 0;
       let finalPricePerUnit = productData.price;
 
@@ -88,15 +95,10 @@ exports.createTransaction = async (req, res) => {
       }
 
       const subtotal = finalPricePerUnit * quantity;
+
       totalProducts += quantity;
       totalPrice += subtotal;
-      console.log("Price sebelum dsicount", totalPrice);
-
-      finalPrice = totalPrice - savingPrice;
-
-      console.log("Price setelah discount ", finalPrice);
-
-      // const totalFinalPrice = totalPrice - savingPrice;
+      console.log("Real price before discount", totalPrice);
 
       productsForTransaction.push({
         product: productData.id,
@@ -111,10 +113,40 @@ exports.createTransaction = async (req, res) => {
         subtotal,
       });
 
-      variant.stock -= quantity;
-      await variant.save();
+      variantsToUpdate.push({
+        variant,
+        quantity,
+      });
     }
 
+    // VALIDATE VOUCHER
+    let discountAmount = 0;
+    let finalPrice = totalPrice;
+
+    if (voucherCode) {
+      const voucherItems = await productsForTransaction.map((item) => ({
+        productId: item.product,
+        finalPrice: item.pricePerUnit,
+        quantity: item.quantity,
+      }));
+
+      const voucherResult = await validateVoucher({
+        code: voucherCode,
+        cartItems: voucherItems,
+        subTotal: totalPrice,
+      });
+
+      discountAmount = voucherResult.discountAmount;
+      finalPrice = voucherResult.finalTotal;
+    }
+
+    // UPDATE STOCK
+    for (const item of variantsToUpdate) {
+      item.variant.stock -= item.quantity;
+      await item.variant.save();
+    }
+
+    //PAYMENT STATUS
     const status =
       paymentMethod === "Cash on Delivery" ? "Processing" : "Pending";
     // Payment Expired (Tranfer)
@@ -126,6 +158,7 @@ exports.createTransaction = async (req, res) => {
     const paymentStatus =
       paymentMethod === "Cash on Delivery" ? "Paid" : "Unpaid";
 
+    // CREATE TRANSACTIONS
     const newTransaction = new Transaction({
       user: userId,
       products: productsForTransaction,
@@ -145,6 +178,7 @@ exports.createTransaction = async (req, res) => {
       status,
     });
 
+    // UPDATE USER ORDER COUNT
     await User.findByIdAndUpdate(userId, {
       $inc: {
         totalOrders: 1,

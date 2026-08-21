@@ -38,7 +38,7 @@ const validateVoucher = async ({ code, subTotal, cartItems }) => {
 	// Check usage limit
 	if (
 		voucher.usage.limit !== null &&
-		voucher.usage.usedCount > voucher.usagePerUser
+		voucher.usage.usedCount >= voucher.usagePerUser
 	) {
 		throw new Error("Voucher usage limit has been reached");
 	}
@@ -88,7 +88,7 @@ const validateVoucher = async ({ code, subTotal, cartItems }) => {
 			voucher.maxDiscount !== null &&
 			discountAmount > voucher.maxDiscount
 		) {
-			discountAmount = Voucher.maxDiscount;
+			discountAmount = voucher.maxDiscount;
 		}
 	}
 

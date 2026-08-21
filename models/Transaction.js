@@ -45,6 +45,7 @@ const transactionSchema = new mongoose.Schema(
     },
     totalProducts: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
+    finalPrice: { type: Number, required: true, default: 0 },
     message: String,
     shippingMethod: String,
     paymentMethod: {

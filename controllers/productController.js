@@ -16,7 +16,19 @@ exports.getLatestProducts = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate("variants");
+    const { search } = req.query;
+
+    const filter = {};
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { brand: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const products = await Product.find(filter).populate("variants");
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch products" });

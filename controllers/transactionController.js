@@ -171,6 +171,7 @@ exports.createTransaction = async (req, res) => {
       shippingMethod,
       shippingAddress,
       voucherCode,
+      discountAmount,
       paymentMethod,
       transferProvider,
       paymentStatus,

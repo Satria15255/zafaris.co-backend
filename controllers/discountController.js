@@ -28,13 +28,13 @@ exports.createDailyDiscount = async () => {
 
 exports.getDailyDiscounts = async (req, res) => {
   try {
-    const allProducts = await Product.find();
-    console.log("Jumlah Produk:", allProducts.length);
-    const discounts = await DailyDiscount.find()
-      .populate("productId")
-      .populate("variants");
+    const discounts = await DailyDiscount.find().populate({
+      path: "productId",
+      populate: {
+        path: "variants",
+      },
+    });
     res.status(200).json(discounts);
-    console.log("Diskon Hari Ini:", await DailyDiscount.find());
   } catch (error) {
     console.error("Error fetching daily discounts", error);
     res

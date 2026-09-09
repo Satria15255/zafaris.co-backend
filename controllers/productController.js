@@ -6,7 +6,8 @@ exports.getLatestProducts = async (req, res) => {
   try {
     const latestProducts = await Product.find()
       .sort({ createdAt: -1 })
-      .limit(9);
+      .limit(9)
+      .populate("variants");
     res.json(latestProducts);
   } catch (error) {
     console.error("Failed fecthing latest product", error);
@@ -128,36 +129,19 @@ exports.deleteProduct = async (req, res) => {
 
 exports.getBestSellerProducts = async (req, res) => {
   try {
-    const bestSellers = await Transaction.aggregate([
-      { $match: { status: "Delivered" } },
-      { $unwind: "$products" },
-      {
-        $group: {
-          _id: "$products.product",
-          totalSold: { $sum: "$products.quantity" },
-        },
-      },
-      { $sort: { totalSold: -1 } },
-      { $limit: 4 },
-      {
-        $lookup: {
-          from: "products",
-          localField: "_id",
-          foreignField: "_id",
-          as: "productDetails",
-        },
-      },
-      { $unwind: "$productDetails" },
-      {
-        $replaceRoot: { newRoot: "$productDetails" },
-      },
-    ]);
+    const bestSellers = await Product.find({
+      isBestSeller: true,
+    })
+      .populate("variants")
+      .limit(4);
 
     res.json(bestSellers);
   } catch (err) {
     console.error("Error fetching best seller", err);
-    res
-      .status(500)
-      .json({ message: "Failed get best sellers products", err: err.message });
+
+    res.status(500).json({
+      message: "Failed get best seller products",
+      err: err.message,
+    });
   }
 };

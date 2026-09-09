@@ -5,6 +5,9 @@ const updateBestSellerProducts = require("../helpers/updateBestSellerProducts");
 const ProductVariant = require("../models/ProductVariant");
 const User = require("../models/User");
 const { validateVoucher } = require("../services/voucher/voucherService");
+const {
+  syncBestSellerProducts,
+} = require("../services/bestSeller/bestSellerService");
 
 // CREATE transaction
 exports.createTransaction = async (req, res) => {
@@ -407,8 +410,11 @@ exports.confirmReceived = async (req, res) => {
     }
 
     transaction.status = "Completed";
+
     await transaction.save();
 
+    // Recalculate best seller
+    await syncBestSellerProducts();
     // Update totalSold
     for (const item of transaction.products) {
       await Product.findByIdAndUpdate(item.product, {

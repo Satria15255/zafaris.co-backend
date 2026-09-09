@@ -20,4 +20,18 @@ const dailyDiscountSchema = new mongoose.Schema({
   },
 });
 
+dailyDiscountSchema.virtual("variants", {
+  ref: "ProductVariant",
+  localField: "_id",
+  foreignField: "product",
+});
+
+dailyDiscountSchema.set("toJSON", {
+  virtuals: true,
+});
+
+dailyDiscountSchema.set("toObject", {
+  virtuals: true,
+});
+
 module.exports = mongoose.model("DailyDiscount", dailyDiscountSchema);

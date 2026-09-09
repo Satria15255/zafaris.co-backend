@@ -30,11 +30,15 @@ exports.getDailyDiscounts = async (req, res) => {
   try {
     const allProducts = await Product.find();
     console.log("Jumlah Produk:", allProducts.length);
-    const discounts = await DailyDiscount.find().populate("productId");
+    const discounts = await DailyDiscount.find()
+      .populate("productId")
+      .populate("variants");
     res.status(200).json(discounts);
     console.log("Diskon Hari Ini:", await DailyDiscount.find());
   } catch (error) {
     console.error("Error fetching daily discounts", error);
-    res.status(500).json({ message: "Failed get daily discounts", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed get daily discounts", error: error.message });
   }
 };

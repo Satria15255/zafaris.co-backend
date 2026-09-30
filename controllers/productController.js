@@ -2,6 +2,32 @@ const Product = require("../models/Product");
 const Transaction = require("../models/Transaction");
 const DailyDiscount = require("../models/DailyDiscount");
 
+exports.createProduct = async (req, res) => {
+  console.log("POST masuk ke route");
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "IMage si required" });
+    }
+
+    const sizes =
+      typeof req.body.sizes === "string"
+        ? req.body.sizes.split(",").map(Number)
+        : req.body.sizes;
+
+    const product = new Product({
+      ...req.body,
+      sizes,
+      image: req.file.path,
+      createdBy: req.user?.id || null,
+    });
+    const saved = await product.save();
+    return res.status(201).json(saved);
+  } catch (err) {
+    console.error("create product error", err);
+    return res.status(500).json({ message: "Failed to create product" });
+  }
+};
+
 exports.getLatestProducts = async (req, res) => {
   try {
     const latestProducts = await Product.find()
@@ -59,32 +85,6 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-exports.createProduct = async (req, res) => {
-  console.log("POST masuk ke route");
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "IMage si required" });
-    }
-
-    const sizes =
-      typeof req.body.sizes === "string"
-        ? req.body.sizes.split(",").map(Number)
-        : req.body.sizes;
-
-    const product = new Product({
-      ...req.body,
-      sizes,
-      image: req.file.path,
-      createdBy: req.user?.id || null,
-    });
-    const saved = await product.save();
-    return res.status(201).json(saved);
-  } catch (err) {
-    console.error("create product error", err);
-    return res.status(500).json({ message: "Failed to create product" });
-  }
-};
-
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -106,7 +106,7 @@ exports.updateProduct = async (req, res) => {
 
     // Jika ada gambar baru diunggah
     if (req.file) {
-      product.image = req.file.path; // pastikan kamu sudah setup upload ke Cloudinary di middleware
+      product.image = req.file.path;
     }
 
     await product.save();

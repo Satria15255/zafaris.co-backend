@@ -226,7 +226,7 @@ exports.payTransaction = async (req, res) => {
         });
 
         if (variant) {
-          variant.stock += quantity;
+          variant.stock += item.quantity;
           await variant.save();
         }
       }
@@ -368,7 +368,7 @@ exports.cancelTransaction = async (req, res) => {
       });
 
       if (variant) {
-        variant.stock += quantity;
+        variant.stock += item.quantity;
         await variant.save();
       }
     }

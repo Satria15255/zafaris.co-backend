@@ -5,11 +5,17 @@ const Product = require("../models/Product");
 // GET FAVORITE
 exports.getFavorites = async (req, res) => {
 	try {
-		const user = await User.findById(req.user.id).populate("favorites");
+		const user = await User.findById(req.user.id).populate({
+			path: "favorites",
+			populate: {
+				path: "variants",
+			},
+		});
 
 		if (!user) {
 			res.status(404).json({ message: "User not found" });
 		}
+		console.log(user);
 
 		res.status(200).json({
 			message: "Fetch favorites success",
@@ -57,7 +63,12 @@ exports.addFavorites = async (req, res) => {
 			{
 				new: true,
 			},
-		).populate("favorites");
+		).populate({
+			path: "favorites",
+			populate: {
+				path: "variants",
+			},
+		});
 
 		if (!user) {
 			return res.status(404).json({
@@ -99,7 +110,12 @@ exports.removeFavorite = async (req, res) => {
 			{
 				new: true,
 			},
-		).populate("favorites");
+		).populate({
+			path: "favorites",
+			populate: {
+				path: "variants",
+			},
+		});
 
 		if (!user) {
 			return res.status(404).json({

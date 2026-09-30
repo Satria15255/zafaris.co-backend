@@ -17,8 +17,8 @@ const cancelExpiredTransaction = () => {
     try {
       const result = await Transaction.updateMany(
         {
-          status: "Waiting for Payment",
-          paymentStatus: "Waiting for Payment",
+          status: "Pending",
+          paymentStatus: "Unpaid",
           paymentExpiredAt: { $lte: new Date() },
         },
         {

@@ -11,7 +11,10 @@ const transactionSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    phoneNumber: Number,
+    phoneNumber: {
+      type: String,
+      required: true,
+    },
     products: [
       {
         product: {

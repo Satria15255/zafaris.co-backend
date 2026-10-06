@@ -15,9 +15,10 @@ const {
 	deleteUserAddress,
 	setDefaultAddress,
 } = require("../controllers/authController");
+const { authLimiter } = require("../middleware/rateLimiter");
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
+router.post("/register", authLimiter, registerUser);
+router.post("/login", authLimiter, loginUser);
 router.get("/users/profile", authMiddleware, getUserProfile);
 router.post("/users/address", authMiddleware, addUserAddress);
 router.patch("/users/address/:addressId", authMiddleware, updateUserAddress);

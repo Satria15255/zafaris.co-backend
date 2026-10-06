@@ -5,8 +5,14 @@ const {
 	authMiddleware,
 	adminMiddleware,
 } = require("../middleware/authMiddleware");
+const { sensitiveLimiter } = require("../middleware/rateLimiter");
 
-router.post("/", authMiddleware, transactionController.createTransaction);
+router.post(
+	"/",
+	authMiddleware,
+	sensitiveLimiter,
+	transactionController.createTransaction,
+);
 router.put(
 	"/:id/status",
 	authMiddleware,
@@ -38,6 +44,7 @@ router.patch(
 router.patch(
 	"/:id/payment",
 	authMiddleware,
+	sensitiveLimiter,
 	transactionController.payTransaction,
 );
 

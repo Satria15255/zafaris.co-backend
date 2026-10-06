@@ -14,9 +14,11 @@ const userRoutes = require("./routes/userRoutes");
 const productVariantRoutes = require("./routes/productVariantRoutes");
 const dashboardStats = require("./routes/dashboardRoutes");
 const chartRoutes = require("./routes/chartRoutes");
+const { globalLimiter } = require("./middleware/rateLimiter");
 
 connectDB();
 const app = express();
+app.set("trust proxy", "loopback");
 
 app.use(
   cors({
@@ -36,6 +38,7 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
+app.use("/api", globalLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/favorites", favoritesRoutes);
